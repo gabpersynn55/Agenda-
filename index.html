@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Agenda TAGE MAGE</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Agenda TM">
+<meta name="theme-color" content="#ECEFEA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1512" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Agenda de poche : une colonne, timeline verticale façon agenda papier quadrillé ; les créneaux TAGE MAGE en jaune souci, les cours en vert sauge */
+:root{
+  --bg:#ECEFEA; --sheet:#FBFCFA; --ink:#15211B; --soft:#5B6A61; --line:#D5DDD6; --chip:#E1E7E1;
+  --tm:#E59A12; --tm-ink:#3A2600; --tm-soft:#FCEBC6;
+  --course:#DCE5DE; --course-ink:#22362B; --course-edge:#AFC2B5;
+  --exam:#C8452F; --exam-soft:#F6DCD5;
+  --good:#2E8B57; --bad:#C8452F; --accent:#1F5C46; --on-accent:#FFFFFF; --shadow:rgba(21,33,27,.08);
+  --run:#2F66C9; --run-ink:#FFFFFF; --run-soft:#DCE6F8;
+  --f-display:"Sora","Avenir Next",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1512; --sheet:#17201B; --ink:#E6ECE7; --soft:#97A69C; --line:#26322B; --chip:#1F2A24;
+  --tm:#F2B13A; --tm-ink:#2A1C00; --tm-soft:#4A3510;
+  --course:#22302A; --course-ink:#CFDDD3; --course-edge:#34473C;
+  --exam:#FF7B63; --exam-soft:#4A221B;
+  --good:#5FCB8E; --bad:#FF7B63; --accent:#7FD1AE; --on-accent:#0F1512; --shadow:rgba(0,0,0,.35);
+  --run:#7AA7F5; --run-ink:#0D1A33; --run-soft:#1D2C4A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1512; --sheet:#17201B; --ink:#E6ECE7; --soft:#97A69C; --line:#26322B; --chip:#1F2A24;
+  --tm:#F2B13A; --tm-ink:#2A1C00; --tm-soft:#4A3510;
+  --course:#22302A; --course-ink:#CFDDD3; --course-edge:#34473C;
+  --exam:#FF7B63; --exam-soft:#4A221B;
+  --good:#5FCB8E; --bad:#FF7B63; --accent:#7FD1AE; --on-accent:#0F1512; --shadow:rgba(0,0,0,.35);
+  --run:#7AA7F5; --run-ink:#0D1A33; --run-soft:#1D2C4A; color-scheme:dark}
+
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#app{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px calc(96px + env(safe-area-inset-bottom,0px))}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- En-tête ---------- */
+.masthead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.03em;line-height:1.05;text-wrap:balance}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:14px;letter-spacing:0;color:var(--soft);margin-top:6px}
+.jx{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:74px;padding:8px 10px;border-radius:12px;background:var(--ink);color:var(--bg)}
+.jx b{font-family:var(--f-display);font-size:24px;line-height:1;letter-spacing:-.03em}
+.jx span{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-top:3px}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.stat{background:var(--sheet);border-radius:12px;padding:10px 12px;box-shadow:0 0 0 1px var(--line);min-width:0}
+.stat span{display:block;font-size:12px;font-weight:600;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat b{display:block;font-family:var(--f-display);font-size:20px;font-weight:600;letter-spacing:-.02em;margin-top:2px;white-space:nowrap}
+.stat b small{font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--soft);letter-spacing:0}
+.bar{height:5px;border-radius:3px;background:var(--chip);overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;background:var(--tm);border-radius:3px;transition:width .35s}
+.bar.g i{background:var(--accent)}
+
+.label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:22px 0 10px}
+.label em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:500}
+
+/* ---------- Navigation de date ---------- */
+.dnav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;margin-top:18px}
+.dnav .arw{height:44px;border-radius:12px;background:var(--sheet);box-shadow:0 0 0 1px var(--line);font-size:22px;line-height:1}
+.dnav .arw:active{transform:scale(.95)}
+.dtitle{text-align:center;min-width:0}
+.dtitle b{display:block;font-family:var(--f-display);font-weight:600;font-size:18px;letter-spacing:-.02em}
+.dtitle button{font-size:13px;color:var(--accent);font-weight:600;padding:2px 8px}
+.badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.bdg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--chip);color:var(--ink)}
+.bdg.tm{background:var(--tm);color:var(--tm-ink)}
+.bdg.ex{background:var(--exam-soft);color:var(--exam)}
+.bdg.warn{background:var(--tm-soft);color:var(--ink)}
+.dayline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;font-size:13.5px;color:var(--soft)}
+.dayline b{color:var(--ink);font-weight:600}
+
+/* ---------- Timeline du jour ---------- */
+.tl{position:relative;margin-top:10px;border-radius:var(--r);background-color:var(--sheet);box-shadow:0 0 0 1px var(--line),0 10px 28px var(--shadow);overflow:hidden}
+.tl .hr{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.tl .hr.h30{border-top-style:dashed;opacity:.6}
+.tl .hl{position:absolute;left:8px;font-family:var(--f-mono);font-size:11px;color:var(--soft);transform:translateY(-55%);background:var(--sheet);padding:0 2px}
+.tl .lane{position:absolute;left:52px;right:8px;top:0;bottom:0}
+.ev{position:absolute;left:0;right:0;border-radius:9px;padding:5px 9px;overflow:hidden;font-size:12.5px;line-height:1.25;min-height:18px}
+.ev .t{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .m{font-family:var(--f-mono);font-size:11px;opacity:.85}
+.ev .r{display:block;font-size:11.5px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.c{background:var(--course);color:var(--course-ink);box-shadow:inset 3px 0 0 var(--course-edge)}
+.ev.x{background:var(--exam-soft);color:var(--exam);box-shadow:inset 3px 0 0 var(--exam)}
+.ev.o{background:transparent;color:var(--course-ink);box-shadow:inset 0 0 0 1.5px var(--course-edge);border-style:dashed}
+.ev.u{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.ev.short{padding-top:2px;padding-bottom:2px}
+.ev.short .r{display:none}
+.slot{position:absolute;left:0;right:0;border-radius:9px;background:var(--tm);color:var(--tm-ink);padding:5px 40px 5px 10px;text-align:left;overflow:hidden;box-shadow:0 2px 8px var(--shadow);font-size:13px;line-height:1.25;z-index:2;transition:box-shadow .15s}
+.slot b{display:block;font-family:var(--f-display);font-weight:600;font-size:13.5px;letter-spacing:-.01em}
+.slot .m{font-family:var(--f-mono);font-size:11.5px}
+.slot .st{position:absolute;top:6px;right:8px;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:13px;font-weight:700;background:rgba(255,255,255,.45)}
+.slot.done{background:var(--good);color:#fff}
+.slot.done .st{background:rgba(255,255,255,.22)}
+.slot.part{background:repeating-linear-gradient(135deg,var(--tm) 0 8px,var(--tm-soft) 8px 16px);color:var(--tm-ink)}
+.slot.skip{background:var(--sheet);color:var(--soft);box-shadow:inset 0 0 0 1.5px var(--line);text-decoration:line-through}
+.slot.skip b{text-decoration:line-through}
+.slot.conflict{box-shadow:0 0 0 2px var(--bad)}
+.slot.run{background:var(--run);color:var(--run-ink)}
+.slot.run.done{background:var(--good);color:#fff}
+.slot.run.part{background:repeating-linear-gradient(135deg,var(--run) 0 8px,var(--run-soft) 8px 16px);color:var(--ink)}
+.slot.run.skip{background:var(--sheet);color:var(--soft)}
+.slot.run.late{box-shadow:0 0 0 2px var(--tm)}
+.bdg.run{background:var(--run-soft);color:var(--ink)}
+.wk .b.r{background:var(--run);z-index:1}
+.wk .b.r.done{background:var(--good)}
+.wk .b.r.skip{background:var(--line)}
+.wk .dh .dot.r{background:var(--run)}
+.md .tags .r{background:var(--run)}
+.runline{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--sheet);box-shadow:0 0 0 1px var(--line);font-size:13.5px}
+.runline i{flex:none;width:10px;height:10px;border-radius:3px;background:var(--run)}
+.runline b{font-weight:600}
+.rdet{font-size:14px;line-height:1.5;background:var(--sheet);border-radius:12px;padding:10px 12px;box-shadow:0 0 0 1px var(--line)}
+.slot.drag{box-shadow:0 10px 24px var(--shadow),0 0 0 2px var(--ink);z-index:5;transition:none}
+.slot .grip{position:absolute;right:6px;bottom:4px;width:28px;height:22px;display:grid;place-items:center;font-size:14px;opacity:.7;touch-action:none;cursor:grab}
+.slot .rz{position:absolute;left:0;right:36px;bottom:0;height:10px;touch-action:none;cursor:ns-resize}
+.slot .rz::after{content:"";position:absolute;left:50%;bottom:3px;width:26px;height:3px;border-radius:2px;background:currentColor;opacity:.35;transform:translateX(-50%)}
+.now{position:absolute;left:46px;right:0;height:0;border-top:2px solid var(--bad);z-index:4}
+.now::before{content:"";position:absolute;left:-5px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--bad)}
+.hint{font-size:12.5px;color:var(--soft);margin:10px 2px 0;text-align:center}
+
+/* ---------- Boutons ---------- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:12px 16px;border-radius:13px;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:15.5px;text-align:center}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--sheet);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.btn.tm{background:var(--tm);color:var(--tm-ink)}
+.btn.danger{background:var(--sheet);color:var(--bad);box-shadow:0 0 0 1px var(--line)}
+.btn small{font-weight:500;font-size:12.5px;opacity:.8}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.link{font-size:14px;color:var(--soft);text-decoration:underline;text-underline-offset:3px;padding:10px;font-weight:500}
+
+/* ---------- Semaine ---------- */
+.wk{display:grid;grid-template-columns:30px repeat(7,minmax(0,1fr));gap:3px;margin-top:12px}
+.wk .dh{text-align:center;font-size:11.5px;color:var(--soft);font-weight:600;padding:4px 0;border-radius:8px;line-height:1.2}
+.wk .dh b{display:block;font-family:var(--f-display);font-size:16px;color:var(--ink);font-weight:600}
+.wk .dh.today{background:var(--ink);color:var(--bg)}
+.wk .dh.today b{color:var(--bg)}
+.wk .dh .dot{display:block;width:6px;height:6px;border-radius:50%;margin:3px auto 0;background:transparent}
+.wk .dh .dot.x{background:var(--exam)}
+.wk .dh .dot.s{background:var(--tm)}
+.wk .col{position:relative;background:var(--sheet);border-radius:8px;box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.wk .ax{position:relative}
+.wk .ax span{position:absolute;right:3px;font-family:var(--f-mono);font-size:10.5px;color:var(--soft);transform:translateY(-50%)}
+.wk .b{position:absolute;left:2px;right:2px;border-radius:4px}
+.wk .b.c{background:var(--course)}
+.wk .b.x{background:var(--exam)}
+.wk .b.o{box-shadow:inset 0 0 0 1px var(--course-edge)}
+.wk .b.s{background:var(--tm);z-index:1}
+.wk .b.s.done{background:var(--good)}
+.wk .b.s.skip{background:var(--line)}
+.wk .b.s.part{background:repeating-linear-gradient(135deg,var(--tm) 0 4px,var(--tm-soft) 4px 8px)}
+.wk .colbtn{display:block;width:100%;text-align:inherit}
+.wsum{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin:6px 0 0 33px}
+.wsum span{text-align:center;font-family:var(--f-mono);font-size:10.5px;color:var(--soft)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--soft);margin-top:14px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* ---------- Mois ---------- */
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px}
+.mgrid .wd{text-align:center;font-size:11.5px;font-weight:600;color:var(--soft);padding-bottom:2px}
+.md{position:relative;aspect-ratio:1/1.15;max-width:100%;border-radius:10px;background:var(--sheet);box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:6px;min-width:0;text-align:left}
+.md b{font-family:var(--f-display);font-weight:600;font-size:15px;line-height:1}
+.md.out{visibility:hidden}
+.md.past b{color:var(--soft)}
+.md.today{box-shadow:0 0 0 2px var(--ink)}
+.md.jj{background:var(--ink);color:var(--bg)}
+.md.jj b{color:var(--bg)}
+.md .ring{width:100%;height:4px;border-radius:2px;background:var(--chip);overflow:hidden}
+.md .ring i{display:block;height:100%;background:var(--good)}
+.md .tags{display:flex;gap:3px}
+.md .tags i{width:7px;height:7px;border-radius:50%}
+.md .tags .x{background:var(--exam)}
+.md .tags .s{background:var(--tm)}
+.md .tags .f{background:var(--soft)}
+.md .mm{font-family:var(--f-mono);font-size:10px;color:var(--soft)}
+.mlist{display:flex;flex-direction:column;gap:6px}
+.mi{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:baseline;padding:10px 12px;background:var(--sheet);border-radius:12px;box-shadow:0 0 0 1px var(--line);font-size:14px;text-align:left;width:100%}
+.mi .d{font-family:var(--f-mono);font-size:12.5px;color:var(--soft)}
+.mi.ex .d{color:var(--exam)}
+
+/* ---------- Réglages ---------- */
+.card{background:var(--sheet);border-radius:var(--r);box-shadow:0 0 0 1px var(--line);padding:4px 14px}
+.fr{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);min-height:52px}
+.fr:last-child{border-bottom:0}
+.fr label{font-size:15px;font-weight:500;min-width:0}
+.fr label small{display:block;font-size:12.5px;color:var(--soft);font-weight:400;margin-top:1px}
+.fr input[type=time],.fr input[type=number],.fr input[type=date],.fr select{min-height:38px;border-radius:9px;border:0;box-shadow:0 0 0 1px var(--line);background:var(--bg);padding:6px 10px;font-family:var(--f-mono);font-size:15px;max-width:150px}
+.fr input[type=number]{width:84px;text-align:right}
+.tg{width:48px;height:28px;border-radius:14px;background:var(--chip);position:relative;box-shadow:inset 0 0 0 1px var(--line);transition:background .15s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--sheet);box-shadow:0 1px 3px var(--shadow);transition:transform .15s}
+.tg[aria-pressed="true"]{background:var(--accent)}
+.tg[aria-pressed="true"]::after{transform:translateX(20px)}
+.saved{font-size:12.5px;color:var(--good);font-weight:600;text-align:center;min-height:20px;margin-top:8px}
+.stack{display:flex;flex-direction:column;gap:8px}
+
+/* ---------- Tiroirs ---------- */
+.ovl{position:fixed;inset:0;z-index:30;background:rgba(10,16,12,.45);display:flex;align-items:flex-end;justify-content:center}
+.dpanel{width:100%;max-width:560px;max-height:92dvh;overflow-y:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:22px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;animation:up .2s ease-out}
+.dpanel::before{content:"";width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center;margin:-10px 0 2px}
+@keyframes up{from{transform:translateY(28px);opacity:.5}}
+.dpanel h3{font-family:var(--f-display);font-weight:600;font-size:21px;letter-spacing:-.02em;margin:0}
+.dpanel .ds{font-size:14px;color:var(--soft);margin-top:-6px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{min-height:58px;border-radius:12px;background:var(--sheet);box-shadow:0 0 0 1px var(--line);font-weight:600;font-size:14.5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.seg button i{font-style:normal;font-size:18px}
+.seg button.on[data-s="done"]{background:var(--good);color:#fff;box-shadow:none}
+.seg button.on[data-s="part"]{background:var(--tm);color:var(--tm-ink);box-shadow:none}
+.seg button.on[data-s="skip"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.times{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.times label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--soft)}
+.times input,.fld{min-height:46px;border-radius:11px;border:0;box-shadow:0 0 0 1px var(--line);background:var(--sheet);padding:8px 12px;font-family:var(--f-mono);font-size:17px;width:100%}
+.fld{font-family:var(--f-body);font-size:16px}
+textarea.fld{min-height:120px;font-family:var(--f-mono);font-size:12px;line-height:1.4;resize:vertical}
+.err{font-size:13px;color:var(--bad);min-height:18px}
+.ok{font-size:13px;color:var(--good);min-height:18px}
+
+/* ---------- Onglets ---------- */
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--sheet) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:7px max(16px,env(safe-area-inset-right,0px)) calc(7px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+#tabbar .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:560px;margin:0 auto}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;border-radius:12px;font-size:12px;font-weight:600;color:var(--soft);min-height:52px;justify-content:center}
+.tab .ti{font-family:var(--f-mono);font-size:13px;font-weight:600;width:34px;height:24px;border-radius:8px;display:grid;place-items:center}
+.tab.on{color:var(--ink)}
+.tab.on .ti{background:var(--tm);color:var(--tm-ink)}
+@media (max-width:360px){.stat b{font-size:17px}.brand{font-size:23px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>
+:root{padding-top:0;padding-bottom:0}
+body{margin:0}
+#app{padding-top:calc(18px + env(safe-area-inset-top,0px))}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ============ AUJOURD'HUI ============ -->
+  <section id="today">
+    <div class="masthead">
+      <div class="brand">Agenda TAGE MAGE<small id="hSub">2 h par jour jusqu’au 3 février</small></div>
+      <div class="jx" aria-label="Compte à rebours"><b class="num" id="hJ">J-0</b><span>4 févr.</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>Ce jour</span><b class="num" id="sDay">0/2 h</b><div class="bar"><i id="sDayBar" style="width:0"></i></div></div>
+      <div class="stat"><span>Semaine</span><b class="num" id="sWeek">0 %</b><div class="bar g"><i id="sWeekBar" style="width:0"></i></div></div>
+      <div class="stat"><span>Série</span><b class="num" id="sStreak">0 j</b><div class="bar"><i id="sStreakBar" style="width:0"></i></div></div>
+    </div>
+    <div class="dnav">
+      <button class="arw" id="dPrev" aria-label="Jour précédent">‹</button>
+      <div class="dtitle"><b id="dTitle">—</b><button id="dToday">Revenir à aujourd’hui</button></div>
+      <button class="arw" id="dNext" aria-label="Jour suivant">›</button>
+    </div>
+    <div class="badges" id="dBadges"></div>
+    <div class="dayline"><span id="dPlan">—</span><button class="link" id="dRebuild" style="padding:4px 0">Recalculer la journée</button></div>
+    <div class="tl" id="tl"></div>
+    <p class="hint">Touche un créneau pour le cocher ou le modifier. Fais glisser ⠿ pour le déplacer, la barre du bas pour le redimensionner.</p>
+    <div class="row2" style="margin-top:12px">
+      <button class="btn ghost" id="addEv">+ Événement</button>
+      <button class="btn tm" id="addSlot">+ Créneau</button>
+    </div>
+  </section>
+
+  <!-- ============ SEMAINE ============ -->
+  <section id="week" hidden>
+    <div class="masthead"><div class="brand">Semaine<small id="wSub">—</small></div></div>
+    <div class="stats">
+      <div class="stat"><span>Prévues</span><b class="num" id="wPlan">0 h</b></div>
+      <div class="stat"><span>Faites</span><b class="num" id="wDone">0 h</b><div class="bar g"><i id="wDoneBar" style="width:0"></i></div></div>
+      <div class="stat"><span>Réalisation</span><b class="num" id="wRate">0 %</b></div>
+    </div>
+    <div class="dnav">
+      <button class="arw" id="wPrev" aria-label="Semaine précédente">‹</button>
+      <div class="dtitle"><b id="wTitle">—</b><button id="wToday">Cette semaine</button></div>
+      <button class="arw" id="wNext" aria-label="Semaine suivante">›</button>
+    </div>
+    <div class="wk" id="wk"></div>
+    <div class="wsum" id="wsum"></div>
+    <div class="runline" id="wRun"><i></i><span>—</span></div>
+    <div class="legend"><span><i style="background:var(--tm)"></i>TAGE MAGE</span><span><i style="background:var(--run)"></i>Course</span><span><i style="background:var(--good)"></i>Fait</span><span><i style="background:var(--course)"></i>Cours</span><span><i style="background:var(--exam)"></i>Examen</span></div>
+  </section>
+
+  <!-- ============ MOIS ============ -->
+  <section id="month" hidden>
+    <div class="masthead"><div class="brand">Mois<small id="mSub">—</small></div></div>
+    <div class="dnav">
+      <button class="arw" id="mPrev" aria-label="Mois précédent">‹</button>
+      <div class="dtitle"><b id="mTitle">—</b><button id="mToday">Ce mois-ci</button></div>
+      <button class="arw" id="mNext" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="mgrid" id="mgrid"></div>
+    <div class="legend"><span><i style="background:var(--good)"></i>Heures faites</span><span><i style="background:var(--exam);border-radius:50%"></i>Partiel</span><span><i style="background:var(--tm);border-radius:50%"></i>Session TAGE MAGE</span><span><i style="background:var(--run);border-radius:50%"></i>Sortie course</span><span><i style="background:var(--soft);border-radius:50%"></i>Férié</span></div>
+    <div class="label">Dates clés <em>du mois</em></div>
+    <div class="mlist" id="mlist"></div>
+  </section>
+
+  <!-- ============ RÉGLAGES ============ -->
+  <section id="settings" hidden>
+    <div class="masthead"><div class="brand">Réglages<small>Le planning se recalcule à chaque modification</small></div></div>
+    <div class="label">Volume</div>
+    <div class="card" id="setVol"></div>
+    <div class="label">Ta journée</div>
+    <div class="card" id="setDay"></div>
+    <div class="label">Placement</div>
+    <div class="card" id="setPlace"></div>
+    <div class="label">Course à pied <em>plan 10 km</em></div>
+    <div class="card" id="setRun"></div>
+    <div class="saved" id="savedMsg"></div>
+    <div class="label">Données</div>
+    <div class="stack">
+      <button class="btn ghost" id="expIcs">Exporter les créneaux (.ics)<small>TAGE MAGE et course, pour le calendrier de l’iPhone</small></button>
+      <div class="row2">
+        <button class="btn ghost" id="expJson">Exporter ma sauvegarde</button>
+        <button class="btn ghost" id="impJson">Importer une sauvegarde</button>
+      </div>
+      <button class="btn ghost" id="impEdt">Importer un nouvel emploi du temps (JSON)</button>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:18px"><button class="link" id="resetBtn">Tout remettre à zéro</button></div>
+  </section>
+</div>
+
+<nav id="tabbar" aria-label="Vues">
+  <div class="tabs">
+    <button class="tab on" data-tab="today"><span class="ti">◷</span>Aujourd’hui</button>
+    <button class="tab" data-tab="week"><span class="ti">7j</span>Semaine</button>
+    <button class="tab" data-tab="month"><span class="ti">31</span>Mois</button>
+    <button class="tab" data-tab="settings"><span class="ti">⚙</span>Réglages</button>
+  </div>
+</nav>
+
+<!-- Tiroir : créneau -->
+<div id="slotDrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="sdTitle">
+    <h3 id="sdTitle">Créneau TAGE MAGE</h3>
+    <div class="ds" id="sdSub"></div>
+    <div class="seg" id="sdSeg">
+      <button data-s="done"><i>✓</i>Fait</button>
+      <button data-s="part"><i>½</i>Partiel</button>
+      <button data-s="skip"><i>×</i>Sauté</button>
+    </div>
+    <div class="times">
+      <label for="sdStart">Début<input type="time" id="sdStart" step="300"></label>
+      <label for="sdEnd">Fin<input type="time" id="sdEnd" step="300"></label>
+    </div>
+    <div class="err" id="sdErr"></div>
+    <button class="btn" id="sdSave">Enregistrer l’horaire</button>
+    <button class="btn tm" id="sdReport" hidden>Reporter sur le prochain trou libre</button>
+    <div class="row2">
+      <button class="btn danger" id="sdDel">Supprimer</button>
+      <button class="btn ghost" id="sdClose">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tiroir : séance de course -->
+<div id="runDrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+    <h3 id="rdTitle">Séance</h3>
+    <div class="ds" id="rdSub"></div>
+    <div class="rdet" id="rdDet"></div>
+    <div class="seg" id="rdSeg">
+      <button data-s="done"><i>✓</i>Faite</button>
+      <button data-s="part"><i>½</i>Écourtée</button>
+      <button data-s="skip"><i>×</i>Sautée</button>
+    </div>
+    <div class="times">
+      <label for="rdStart">Départ<input type="time" id="rdStart" step="300"></label>
+      <label for="rdDur">Durée (min)<input type="number" id="rdDur" min="10" max="180" step="5"></label>
+    </div>
+    <div class="err" id="rdErr"></div>
+    <button class="btn" id="rdSave">Enregistrer</button>
+    <div class="row2">
+      <button class="btn ghost" id="rdAuto">Heure automatique</button>
+      <button class="btn ghost" id="rdClose">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tiroir : événement ponctuel -->
+<div id="evDrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="evTitle">
+    <h3 id="evTitle">Ajouter un événement</h3>
+    <div class="ds">Cours exceptionnel, rendez-vous… Les créneaux du jour se réorganisent autour.</div>
+    <input class="fld" id="evName" placeholder="Rendez-vous banque" autocomplete="off">
+    <div class="times">
+      <label for="evStart">Début<input type="time" id="evStart" step="300" value="14:00"></label>
+      <label for="evEnd">Fin<input type="time" id="evEnd" step="300" value="15:00"></label>
+    </div>
+    <div class="err" id="evErr"></div>
+    <button class="btn" id="evSave">Ajouter</button>
+    <div id="evList" class="stack"></div>
+    <button class="link" id="evClose" style="align-self:center">Fermer</button>
+  </div>
+</div>
+
+<!-- Tiroir : données -->
+<div id="ioDrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="ioTitle">
+    <h3 id="ioTitle">—</h3>
+    <div class="ds" id="ioSub"></div>
+    <textarea class="fld" id="ioText" spellcheck="false"></textarea>
+    <input type="file" id="ioFile" accept=".json,application/json" hidden>
+    <div class="err" id="ioErr"></div>
+    <div class="row2" id="ioBtns"></div>
+    <button class="link" id="ioClose" style="align-self:center">Fermer</button>
+  </div>
+</div>
+
+<!-- Tiroir : confirmation -->
+<div id="cfDrawer" class="ovl" hidden>
+  <div class="dpanel" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
+    <h3 id="cfTitle">Tout remettre à zéro ?</h3>
+    <div class="ds">Tes coches, déplacements, événements ajoutés et réglages seront effacés. L’emploi du temps d’origine est conservé.</div>
+    <div class="row2"><button class="btn danger" id="cfYes">Effacer</button><button class="btn ghost" id="cfNo">Annuler</button></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   1. EMPLOI DU TEMPS — extrait des 15 PDF ICAM (26/10/2026 → 07/02/2027)
+   d = date, s/e = début/fin, t = intitulé, y = type, r = salle, v = à vérifier
+   Corrige directement ici si besoin.
+   ===================================================================== */
+const COURS=[
+{"d":"2026-10-26","s":"13:00","e":"14:30","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-AUB2.06 (14)"},
+{"d":"2026-10-27","s":"08:15","e":"11:15","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-ELO 0.11"},
+{"d":"2026-10-27","s":"13:00","e":"14:30","t":"I4.7.MEO.04 - Supply chain","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-10-28","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-10-28","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-11-02","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"cours","r":"LIL-LES2.03 (60) SALLE DE DS 3/3 ; LIL-LES2.02 (60) (B2) SALLE DE DS 2/3 ; LIL-LES2.04 (61) (B1) SALLE DE DS 1/3"},
+{"d":"2026-11-02","s":"13:00","e":"14:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-02","s":"14:45","e":"16:15","t":"ERD - Présentation des programmes internationaux","y":"événement","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-02","s":"16:30","e":"18:00","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-11-02","s":"18:00","e":"19:30","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2026-11-03","s":"10:00","e":"11:30","t":"I4.7.HUM.01 - Histoire des idées politiques","y":"TD","r":"LIL-LAC -1.06 (niveau -1) (60)"},
+{"d":"2026-11-03","s":"13:00","e":"16:00","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-ELO 0.08 ; LIL-ELO 0.09"},
+{"d":"2026-11-04","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-11-04","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-11-04","s":"13:00","e":"14:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LES2.02 (60) (B2) SALLE DE DS 2/3"},
+{"d":"2026-11-04","s":"14:45","e":"16:15","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LAC3.01 (80) (BP)"},
+{"d":"2026-11-05","s":"08:15","e":"11:15","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-06","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"cours","r":"LIL-LAC3.01 (80) (BP)"},
+{"d":"2026-11-06","s":"13:00","e":"14:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LES2.02 (60) (B2) SALLE DE DS 2/3"},
+{"d":"2026-11-13","s":"08:15","e":"09:45","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-13","s":"14:45","e":"16:15","t":"I4.7.MEO.02 - Gestion financière","y":"TD","r":"LIL-LES2.02 (60) (B2) SALLE DE DS 2/3"},
+{"d":"2026-11-13","s":"16:30","e":"18:00","t":"I4.7.MEO.04 - Supply chain","y":"cours","r":"LIL-LES2.08 (56)"},
+{"d":"2026-11-16","s":"08:15","e":"09:45","t":"I4.7.HUM.01 - Histoire des idées politiques","y":"TD","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-16","s":"13:00","e":"14:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LAC -1.06 (niveau -1) (60)"},
+{"d":"2026-11-16","s":"18:00","e":"19:30","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2026-11-17","s":"08:15","e":"09:00","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":""},
+{"d":"2026-11-17","s":"09:00","e":"11:30","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":"LIL-AUB2.07 (24) (B3 2024/2025)"},
+{"d":"2026-11-17","s":"13:00","e":"16:00","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-ELO 0.11"},
+{"d":"2026-11-18","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-11-18","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-11-18","s":"13:00","e":"14:30","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-11-18","s":"14:45","e":"17:45","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":""},
+{"d":"2026-11-19","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-20","s":"10:00","e":"11:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-11-20","s":"14:45","e":"16:15","t":"I4.7.MEO.02 - Gestion financière","y":"TD","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-11-20","s":"16:30","e":"18:00","t":"I4.7.MEO.04 - Supply chain","y":"cours","r":"LIL-LAC3.04 (52)"},
+{"d":"2026-11-23","s":"08:15","e":"09:45","t":"I4.7.HUM.01 - Histoire des idées politiques","y":"TD","r":"LIL-AUB2.03 (42)"},
+{"d":"2026-11-23","s":"10:00","e":"11:30","t":"I4.7.MEO.02 - Gestion financière","y":"cours","r":"LIL-LAC -1.06 (niveau -1) (60)"},
+{"d":"2026-11-23","s":"16:15","e":"17:45","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-11-23","s":"18:00","e":"19:30","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2026-11-24","s":"08:15","e":"09:45","t":"I4.7.MEO.04 - Supply chain","y":"cours","r":"LIL-LES1.02 (48) (B3)"},
+{"d":"2026-11-24","s":"13:00","e":"16:00","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-ELO 0.08 ; LIL-ELO 0.09"},
+{"d":"2026-11-25","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-11-25","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-11-25","s":"13:00","e":"17:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-AUB2.02 (12) ; LIL-AUB2.07 (24) (B3 2024/2025)"},
+{"d":"2026-11-26","s":"08:00","e":"12:30","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-AUB2.07 (24) (B3 2024/2025) ; LIL-AUB2.03 (42)"},
+{"d":"2026-11-26","s":"13:05","e":"15:00","t":"FI - Forum international","y":"événement","r":""},
+{"d":"2026-11-27","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-LES1.02 (48) (B3)"},
+{"d":"2026-11-27","s":"13:00","e":"14:30","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-11-28","s":"09:00","e":"14:30","t":"Journée Intergénérationnelle","y":"événement","r":"LIL-LAC3.02 (48) ; LIL-LAC3.03 (48) ; LIL-LAC3.04 (52) ; LIL-LAC3.05 (48) ; LIL-LAC3.01 (80) (BP)"},
+{"d":"2026-11-30","s":"08:15","e":"09:45","t":"I4.7.HUM.01 - Histoire des idées politiques","y":"TD","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-11-30","s":"13:00","e":"14:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LES2.03 (60) SALLE DE DS 3/3"},
+{"d":"2026-11-30","s":"14:45","e":"16:15","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LES2.02 (60) (B2) SALLE DE DS 2/3"},
+{"d":"2026-11-30","s":"16:30","e":"17:45","t":"RIM - Rencontres Icam Métier","y":"événement","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2026-11-30","s":"18:00","e":"19:30","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2026-12-01","s":"13:00","e":"14:30","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-12-01","s":"14:45","e":"15:45","t":"Forum","y":"événement","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-12-01","s":"15:45","e":"18:00","t":"Forum","y":"événement","r":""},
+{"d":"2026-12-02","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-12-02","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-12-03","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-12-04","s":"10:00","e":"11:30","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-AUB2.03 (42)"},
+{"d":"2026-12-04","s":"13:00","e":"14:30","t":"I4.7.ESE.01 - Management Environnemental","y":"TD","r":"LIL-AUB2.03 (42)"},
+{"d":"2026-12-04","s":"14:45","e":"16:15","t":"I4.7.MEO.02 - Gestion financière","y":"TD","r":"LIL-LAC -1.06 (niveau -1) (60)"},
+{"d":"2026-12-04","s":"16:30","e":"18:00","t":"I4.7.MEO.04 - Supply chain","y":"cours","r":"LIL-LAC3.03 (48)"},
+{"d":"2026-12-07","s":"08:15","e":"09:45","t":"I4.7.HUM.01 - Histoire des idées politiques","y":"TD","r":"LIL-LAC3.02 (48)"},
+{"d":"2026-12-07","s":"13:00","e":"14:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-12-07","s":"18:00","e":"19:30","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2026-12-08","s":"08:15","e":"11:15","t":"I4.7.ESE.01 - Management Environnemental","y":"TP","r":"extérieur - pas de salle"},
+{"d":"2026-12-08","s":"13:00","e":"14:30","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-12-09","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-12-09","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-12-09","s":"13:00","e":"17:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2026-12-10","s":"08:15","e":"11:15","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-ELO 0.11"},
+{"d":"2026-12-10","s":"11:30","e":"12:30","t":"I4.7.ESE.01 - Management Environnemental","y":"examen","r":"LIL-LES2.03 (60) SALLE DE DS 3/3 ; LIL-LES2.02 (60) (B2) SALLE DE DS 2/3 ; LIL-LES2.04 (61) (B1) SALLE DE DS 1/3","v":"Pas de mention 'Examen' mais surveillants + salles de DS : probablement un partiel"},
+{"d":"2026-12-11","s":"13:00","e":"16:00","t":"I4.7.MEO.05 - Systémique entreprise","y":"TD","r":"LIL-LAC3.05 (48)"},
+{"d":"2026-12-11","s":"16:30","e":"18:00","t":"I4.7.MEO.02 - Gestion financière","y":"TD","r":"LIL-LES1.02 (48) (B3)"},
+{"d":"2026-12-14","s":"10:00","e":"11:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-12-14","s":"13:00","e":"14:30","t":"I4.7.MEO.02 - Gestion financière","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-12-14","s":"18:15","e":"19:45","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2026-12-15","s":"08:15","e":"09:00","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":""},
+{"d":"2026-12-15","s":"09:00","e":"11:30","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":"LIL-AUB2.07 (24) (B3 2024/2025)"},
+{"d":"2026-12-15","s":"13:00","e":"14:30","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.04 - Amphi 2 - Camille Féron-Vrau (152)"},
+{"d":"2026-12-16","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2026-12-16","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2026-12-16","s":"11:45","e":"12:45","t":"Messe","y":"événement","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2026-12-17","s":"13:00","e":"16:00","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"TP","r":"LIL-ELO 0.11"},
+{"d":"2026-12-18","s":"10:00","e":"11:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LAC -1.06 (niveau -1) (60)"},
+{"d":"2026-12-18","s":"13:00","e":"14:30","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-LAC3.02 (48)"},
+{"d":"2026-12-18","s":"14:45","e":"16:15","t":"I4.7.MEO.02 - Gestion financière","y":"TD","r":"LIL-LAC3.04 (52)"},
+{"d":"2026-12-18","s":"16:30","e":"18:00","t":"I4.7.MEO.04 - Supply chain","y":"cours","r":"LIL-LAC3.03 (48)"},
+{"d":"2027-01-04","s":"10:00","e":"11:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-04","s":"13:00","e":"14:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"examen","r":"LIL-LES2.03 (60) SALLE DE DS 3/3 ; LIL-LES2.02 (60) (B2) SALLE DE DS 2/3 ; LIL-LES2.04 (61) (B1) SALLE DE DS 1/3"},
+{"d":"2027-01-04","s":"14:45","e":"16:15","t":"I4.7.ESE.01 - Management Environnemental","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-04","s":"18:15","e":"19:45","t":"I4.7.HUM.03 - Remedial English","y":"cours","r":"LIL-LES2.12 (24)"},
+{"d":"2027-01-05","s":"08:15","e":"09:45","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TD","r":"LIL-LES2.02 (60) (B2) SALLE DE DS 2/3"},
+{"d":"2027-01-05","s":"10:00","e":"11:30","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-LES1.02 (48) (B3)"},
+{"d":"2027-01-05","s":"13:00","e":"14:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-05","s":"14:45","e":"16:15","t":"I4.7.MEO.04 - Supply chain","y":"TD","r":"LIL-LES2.04 (61) (B1) SALLE DE DS 1/3"},
+{"d":"2027-01-05","s":"16:30","e":"18:00","t":"I4.7.MEO.02 - Gestion financière","y":"TD","r":"LIL-LAC3.01 (80) (BP)"},
+{"d":"2027-01-06","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2027-01-06","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2027-01-06","s":"13:00","e":"14:30","t":"I4.7.MEO.04 - Supply chain","y":"TD","r":"LIL-LES2.04 (61) (B1) SALLE DE DS 1/3"},
+{"d":"2027-01-06","s":"15:15","e":"17:15","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"projet","r":"LIL-ELO 0.11"},
+{"d":"2027-01-07","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-08","s":"10:00","e":"11:30","t":"I4.7.ESE.01 - Management Environnemental","y":"examen","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-01-08","s":"13:00","e":"14:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-08","s":"16:30","e":"18:00","t":"I4.7.MEO.02 - Gestion financière","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-11","s":"08:15","e":"11:15","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TP","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-01-11","s":"15:00","e":"18:00","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"TP","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-01-12","s":"08:15","e":"09:00","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":""},
+{"d":"2027-01-12","s":"09:00","e":"11:30","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":"LIL-AUB2.07 (24) (B3 2024/2025)"},
+{"d":"2027-01-12","s":"13:00","e":"14:30","t":"I4.7.MEO.02 - Gestion financière","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-12","s":"14:45","e":"16:15","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-LES2.07 (56)"},
+{"d":"2027-01-13","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2027-01-13","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2027-01-14","s":"10:00","e":"11:30","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-01-15","s":"08:00","e":"12:00","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":"LIL-AUB2.02 (12) ; LIL-AUB2.06 (14) ; LIL-LES2.11 (14) ; LIL-LES2.12 (24) ; LIL-LES2.13 (30) ; LIL-LES3.05(22) ; LIL-LES3.08 (20) ; LIL-LES3.09 (22) ; LIL-LES3.11 (16) C5"},
+{"d":"2027-01-18","s":"10:00","e":"11:30","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-LAC -1.06 (niveau -1) (60)"},
+{"d":"2027-01-18","s":"13:00","e":"16:00","t":"I4.7.MEO.05 - Systémique entreprise","y":"TD","r":"LIL-LES2.09 (56)"},
+{"d":"2027-01-18","s":"16:30","e":"17:45","t":"RIM - Rencontres Icam Métier","y":"événement","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-01-19","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-LES2.11 (14) ; LIL-LES2.13 (30) ; LIL-LES3.10 (18) C5 ; LIL-LES3.11 (16) C5"},
+{"d":"2027-01-19","s":"13:00","e":"17:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-LES2.11 (14) ; LIL-LES2.13 (30) ; LIL-LES3.10 (18) C5 ; LIL-LES3.11 (16) C5"},
+{"d":"2027-01-20","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2027-01-20","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2027-01-22","s":"08:15","e":"09:45","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-LAC3.03 (48)"},
+{"d":"2027-01-22","s":"13:00","e":"16:00","t":"I4.7.MEO.05 - Systémique entreprise","y":"TD","r":"LIL-LES2.09 (56)"},
+{"d":"2027-01-25","s":"08:00","e":"12:00","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"projet","r":"LIL-ELO 0.11"},
+{"d":"2027-01-25","s":"13:00","e":"14:30","t":"I4.7.ERD.03 - Relecture d'Experiment","y":"cours","r":"LIL-AUB2.02 (12) ; LIL-AUB2.06 (14) ; LIL-LES2.11 (14) ; LIL-LES2.12 (24) ; LIL-LES2.13 (30) ; LIL-LES3.05(22) ; LIL-LES3.08 (20) ; LIL-LES3.09 (22) ; LIL-LES3.11 (16) C5 ; LIL-AUB2.07 (24) (B3 2024/2025)"},
+{"d":"2027-01-25","s":"16:30","e":"18:00","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-LES2.03 (60) SALLE DE DS 3/3"},
+{"d":"2027-01-26","s":"08:00","e":"12:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-LES2.11 (14) ; LIL-LES2.13 (30) ; LIL-LES3.09 (22) ; LIL-LES3.10 (18) C5"},
+{"d":"2027-01-26","s":"13:00","e":"16:15","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-LES2.11 (14) ; LIL-LES2.13 (30) ; LIL-LES3.09 (22) ; LIL-LES3.10 (18) C5"},
+{"d":"2027-01-26","s":"16:30","e":"18:00","t":"I4.ICT.01 - Projet Professionnel","y":"cours","r":"LIL-AUB2.07 (24) (B3 2024/2025)"},
+{"d":"2027-01-27","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2027-01-27","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2027-01-27","s":"13:00","e":"17:00","t":"I4.7.PROJ.01 - Projet création entreprise","y":"soutenance","r":"LIL-LES2.11 (14) ; LIL-LES3.10 (18) C5"},
+{"d":"2027-01-28","s":"08:15","e":"09:45","t":"I4.7.MEO.01 - Droit des affaires, sociétés","y":"examen","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-01-28","s":"10:00","e":"12:00","t":"I4.7.MEO.02 - Gestion financière","y":"examen","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-01-29","s":"08:00","e":"12:00","t":"I4.7.MEO.05 - Systémique entreprise","y":"cours","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)","v":"Journée entière en salle Sport et Culture, type non indiqué (cours, examen ou séminaire ?)"},
+{"d":"2027-01-29","s":"13:00","e":"16:30","t":"I4.7.MEO.05 - Systémique entreprise","y":"cours","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)","v":"Journée entière en salle Sport et Culture, type non indiqué (cours, examen ou séminaire ?)"},
+{"d":"2027-01-30","s":"09:30","e":"17:30","t":"JPO - Journée portes ouvertes","y":"événement","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"},
+{"d":"2027-02-01","s":"08:15","e":"09:45","t":"I4.7.MEO.06 - Stratégie (PCE)","y":"TD","r":"LIL-AUB2.03 (42)"},
+{"d":"2027-02-01","s":"13:00","e":"15:00","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"projet","r":"LIL-ELO 0.11"},
+{"d":"2027-02-02","s":"14:45","e":"16:15","t":"I4.7.PROJ.02 - Projet Jumeau Numérique","y":"soutenance","r":"LIL-ELO 0.11"},
+{"d":"2027-02-03","s":"08:15","e":"09:45","t":"I4.7.HUM.02 - Anglais","y":"cours","r":"LIL-LES3.09 (22)"},
+{"d":"2027-02-03","s":"10:00","e":"11:30","t":"I4.7.HUM.04 - LV2","y":"cours","r":"LIL-LES2.13 (30)"},
+{"d":"2027-02-03","s":"13:30","e":"17:30","t":"ERD - présentation stage ingé/ contrat pro","y":"événement","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-02-04","s":"10:00","e":"11:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"cours","r":"LIL-LES1.03 - Amphi 1 - Philibert Vrau (152)"},
+{"d":"2027-02-05","s":"13:00","e":"14:30","t":"I4.7.MEO.03 - Lean management, 6Sigma","y":"examen","r":"LIL-SC 1 - Sport et Culture 1 - Pierre-Yves Rogez (120) ; LIL-SC 2 - Sport et Culture 2 - Pierre-Yves Rogez (60)"}
+];
+
+/* =====================================================================
+   1 bis. PLAN COURSE 10 KM — lu sur les 52 captures (03/11/2026 → 03/03/2027)
+   min = durée totale estimée (échauffement + fractions + récup + retour au calme)
+   ===================================================================== */
+const RUNS=[
+{"d":"2026-11-03","t":"Footing 40 min","k":"endurance","min":40,"det":"40 min à 5'46/km — on fait tourner les jambes"},
+{"d":"2026-11-05","t":"Footing 50 min + 3 min soutenu","k":"vma","min":55,"det":"Échauff. 40 min à 5'46 · 3 min intensif à 3'45 · retour au calme 10 min"},
+{"d":"2026-11-08","t":"Test VMA (demi-Cooper)","k":"test","min":50,"det":"Échauff. 30 min à 5'46 · 6 min à fond (3'45) · retour au calme 10 min"},
+{"d":"2026-11-10","t":"1 h endurance","k":"endurance","min":60,"det":"10,8 km à 5'33/km"},
+{"d":"2026-11-12","t":"6 × 400 m (R = 200 m)","k":"vma","min":55,"det":"Échauff. 25 min à 6'15 · 6 × 400 m à 3'45, récup 200 m · retour au calme 10 min"},
+{"d":"2026-11-15","t":"7 km endurance","k":"endurance","min":40,"det":"7 km à 5'46/km"},
+{"d":"2026-11-17","t":"5 × 600 m (R = 200 m)","k":"vma","min":55,"det":"Échauff. 25 min · 5 × 600 m à 4'01, récup 200 m · retour au calme 10 min"},
+{"d":"2026-11-19","t":"3000 m allure 10 km","k":"allure","min":55,"det":"Échauff. 30 min · 3000 m à 4'24 · retour au calme 10 min (9,8 km)"},
+{"d":"2026-11-22","t":"7 km endurance","k":"endurance","min":40,"det":"7 km à 5'46/km"},
+{"d":"2026-11-24","t":"40 min footing lent","k":"recup","min":40,"det":"Plus lent que l'endurance, footing de récupération"},
+{"d":"2026-11-26","t":"8 × (30\"/30\")","k":"vma","min":50,"det":"Échauff. 30 min · 8 × 30 s à 3'24 / 30 s récup · retour au calme 10 min"},
+{"d":"2026-11-29","t":"6 km endurance","k":"endurance","min":35,"det":"6 km à 5'46/km"},
+{"d":"2026-12-01","t":"50 min footing lent","k":"recup","min":50,"det":"8 km, footing de récupération"},
+{"d":"2026-12-03","t":"5 × 400 m (R = 200 m)","k":"vma","min":50,"det":"Échauff. 25 min · 5 × 400 m à 3'45, récup 200 m · retour au calme 10 min"},
+{"d":"2026-12-06","t":"8 km endurance","k":"endurance","min":45,"det":"8 km à 5'46/km"},
+{"d":"2026-12-08","t":"10 × 200 m (R = 100 m)","k":"vma","min":50,"det":"Échauff. 25 min · 10 × 200 m à 3'24, récup 100 m · retour au calme 10 min"},
+{"d":"2026-12-10","t":"3 × 2500 m à 85 % VMA","k":"allure","min":75,"det":"Échauff. 20 min · 3 × 2500 m à 4'24, récup 500 m · retour au calme 10 min"},
+{"d":"2026-12-13","t":"8 km endurance","k":"endurance","min":45,"det":"8 km à 5'46/km"},
+{"d":"2026-12-15","t":"45 min endurance","k":"endurance","min":45,"det":"8,1 km à 5'33/km"},
+{"d":"2026-12-17","t":"5 × 500 m (R = 200 m)","k":"vma","min":55,"det":"Échauff. 25 min · 5 × 500 m à 3'56, récup 200 m · retour au calme 10 min"},
+{"d":"2026-12-20","t":"6 km endurance","k":"endurance","min":35,"det":"6 km à 5'46/km"},
+{"d":"2026-12-22","t":"Test VMA (demi-Cooper)","k":"test","min":50,"det":"Échauff. 30 min à 5'46 · 6 min à fond · retour au calme 10 min"},
+{"d":"2026-12-24","t":"4 × 1000 m allure 10 km","k":"allure","min":55,"det":"Échauff. 20 min · 4 × 1000 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2026-12-27","t":"8 km endurance","k":"endurance","min":45,"det":"8 km à 5'46/km"},
+{"d":"2026-12-29","t":"3 × 1500 m allure 10 km","k":"allure","min":55,"det":"Échauff. 20 min · 3 × 1500 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2026-12-31","t":"45 min footing lent","k":"recup","min":45,"det":"Footing de récupération"},
+{"d":"2027-01-03","t":"8 km endurance","k":"endurance","min":45,"det":"8 km à 5'46/km"},
+{"d":"2027-01-05","t":"2 × 2000 m allure cible","k":"allure","min":60,"det":"Échauff. 25 min · 2 × 2000 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2027-01-07","t":"50' dont 20' actifs","k":"allure","min":50,"det":"Échauff. 20 min · 10 min à 5'00 · 10 min à 4'41 · retour au calme 10 min"},
+{"d":"2027-01-10","t":"9 km endurance","k":"endurance","min":50,"det":"9 km à 5'46/km"},
+{"d":"2027-01-12","t":"2500 m allure spécifique","k":"allure","min":55,"det":"Échauff. 30 min · 2500 m à 4'12 · retour au calme 10 min"},
+{"d":"2027-01-14","t":"55 min endurance","k":"endurance","min":55,"det":"9,9 km à 5'33/km"},
+{"d":"2027-01-17","t":"7 km endurance","k":"endurance","min":40,"det":"7 km à 5'46/km"},
+{"d":"2027-01-19","t":"Pyramide 1000/1500/2000/1500/1000 m","k":"allure","min":75,"det":"Échauff. 20 min · 1000 (4'10) / 1500 (4'15) / 2000 (4'24) / 1500 / 1000, récup 2-3-4-3 min · retour au calme 10 min"},
+{"d":"2027-01-21","t":"8 × 500 m (R = 200 m)","k":"vma","min":60,"det":"Échauff. 20 min · 8 × 500 m à 3'56, récup 200 m · retour au calme 10 min"},
+{"d":"2027-01-24","t":"9 km endurance","k":"endurance","min":50,"det":"9 km à 5'46/km"},
+{"d":"2027-01-26","t":"7 × 1000 m allure 10 km","k":"allure","min":75,"det":"Échauff. 20 min · 7 × 1000 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2027-01-28","t":"50 min endurance","k":"endurance","min":50,"det":"9 km"},
+{"d":"2027-01-31","t":"9 km endurance","k":"endurance","min":50,"det":"9 km à 5'46/km"},
+{"d":"2027-02-02","t":"3000 / 2000 / 1000 m","k":"allure","min":65,"det":"Échauff. 20 min · 3 km à 4'24 · 2 km à 4'15 · 1 km à 4'10, récup 4 puis 3 min · retour au calme 10 min"},
+{"d":"2027-02-04","t":"Footing pyramidal","k":"endurance","min":45,"det":"Échauff. 15 min · 20 min à 5'46 · retour au calme 10 min"},
+{"d":"2027-02-07","t":"8 km endurance","k":"endurance","min":45,"det":"8 km à 5'46/km"},
+{"d":"2027-02-09","t":"7 × 1000 m allure 10 km","k":"allure","min":75,"det":"Échauff. 20 min · 7 × 1000 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2027-02-11","t":"12 × 300 m (R = 1 min)","k":"vma","min":60,"det":"Échauff. 20 min · 12 × 300 m à 3'45, récup 1 min · retour au calme 10 min"},
+{"d":"2027-02-14","t":"10 km endurance","k":"endurance","min":60,"det":"10 km à 5'33-5'46/km"},
+{"d":"2027-02-16","t":"3 × 2000 m allure 10 km","k":"allure","min":65,"det":"Échauff. 20 min · 3 × 2000 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2027-02-18","t":"40 min footing + renforcement","k":"endurance","min":60,"det":"40 min à 6'15 puis renforcement musculaire (durée estimée 20 min)","v":"Durée du renforcement non indiquée sur la capture : 20 min estimées"},
+{"d":"2027-02-21","t":"10 km endurance","k":"endurance","min":60,"det":"10 km à 5'33/km"},
+{"d":"2027-02-23","t":"4 × 500 m (R = 200 m)","k":"vma","min":55,"det":"Échauff. 30 min · 4 × 500 m à 3'56, récup 200 m · retour au calme 10 min"},
+{"d":"2027-02-25","t":"7 km endurance","k":"endurance","min":40,"det":"7 km à 5'46/km"},
+{"d":"2027-02-28","t":"2 × 1000 m allure 10 km","k":"allure","min":55,"det":"Échauff. 30 min · 2 × 1000 m à 4'12, récup 2 min · retour au calme 10 min"},
+{"d":"2027-03-03","t":"20 min footing lent","k":"recup","min":20,"det":"Affûtage, 3,2 km"}
+];
+
+/* Dates spéciales */
+const EXAM_DAY='2027-02-04';
+const LAST_SLOT_DAY='2027-02-03';
+const SPECIAL={
+  '2026-11-19':{label:'Session blanche TAGE MAGE',short:'Session blanche',kind:'s'},
+  '2027-02-04':{label:'TAGE MAGE — jour J',short:'Jour J',kind:'s'}
+};
+const FERIES={'2026-11-01':'Toussaint','2026-11-11':'Armistice','2026-12-25':'Noël','2027-01-01':'Jour de l’an'};
+const VACANCES=[['2026-12-19','2027-01-03','Vacances de Noël']];
+/* Exceptions validées jour par jour (écrasent les réglages ce jour-là) */
+const EXCEPTIONS={
+  '2027-01-26':{campusEnd:'20:15'},  // soutenances + cours jusqu'à 18h : on garde les 2 h
+  '2026-11-09':{daily:240},'2026-11-10':{daily:240},'2026-11-11':{daily:240},  // semaine quasi sans cours : 4 h par jour
+  '2026-11-12':{daily:240},'2026-11-13':{daily:240}
+};
+
+/* =====================================================================
+   2. RÉGLAGES PAR DÉFAUT (modifiables dans l’onglet Réglages)
+   ===================================================================== */
+const DEFAULTS={
+  start:'2026-10-27', daily:120, lightDay:-1, lightMin:60, examMin:60, examVeille:true,
+  wake:'07:00', limit:'22:30', margin:10, lunch:true, lunchStart:'11:30', lunchEnd:'13:00',
+  campusEnd:'20:00', earliest:'08:00', weekend:'14:00', focus:'09:00', minBlock:30,
+  runOn:true, runFrom:'18:00', runTo:'20:00', runGap:30, runWeekend:'10:00'
+};
+
+/* =====================================================================
+   3. ÉTAT + SAUVEGARDE
+   ===================================================================== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const STORE='agenda-tm-v1';
+let S={R:{...DEFAULTS},day:{},cours:null,run:{}};
+try{const raw=localStorage.getItem(STORE);if(raw){const o=JSON.parse(raw);S={...S,...o,R:{...DEFAULTS,...(o.R||{})},run:o.run||{}}}}catch(e){}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}}
+const R=()=>S.R;
+const cours=()=>S.cours||COURS;
+
+/* ---------- utilitaires date / heure ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const D=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12)};
+const addD=(s,n)=>{const d=D(s);d.setDate(d.getDate()+n);return iso(d)};
+const m2=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const hm=x=>`${pad(Math.floor(x/60))}:${pad(x%60)}`;
+const hh=x=>{const h=Math.floor(x/60),m=x%60;return m?`${h}h${pad(m)}`:`${h}h`};
+const dur=x=>{const h=Math.floor(x/60),m=Math.round(x%60);return h&&m?`${h} h ${pad(m)}`:h?`${h} h`:`${m} min`};
+const todayIso=()=>iso(new Date());
+const fmtDay=s=>{const x=D(s).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});return x[0].toUpperCase()+x.slice(1)};
+const fmtShort=s=>D(s).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+const monday=s=>{const d=D(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return iso(d)};
+const shortTitle=t=>t.replace(/^I4\.(?:7\.)?[A-Z]+\.\d+ - /,'');
+
+/* ---------- index cours par jour ---------- */
+let BYDAY={};
+function indexCours(){BYDAY={};for(const c of cours()){(BYDAY[c.d]=BYDAY[c.d]||[]).push(c)}for(const k in BYDAY)BYDAY[k].sort((a,b)=>a.s<b.s?-1:1)}
+indexCours();
+const EXAMS=()=>new Set(cours().filter(c=>c.y==='examen').map(c=>c.d));
+
+function dayState(d){return S.day[d]||(S.day[d]={fixed:[],ev:[],cut:0})}
+function peekDay(d){return S.day[d]||{fixed:[],ev:[],cut:0}}
+function events(d){
+  const base=(BYDAY[d]||[]).map(c=>({s:m2(c.s),e:m2(c.e),t:c.t,y:c.y,r:c.r,v:c.v}));
+  const extra=peekDay(d).ev.map((x,i)=>({s:m2(x.s),e:m2(x.e),t:x.t,y:'perso',i}));
+  return base.concat(extra).sort((a,b)=>a.s-b.s);
+}
+/* ---------- course à pied ---------- */
+const RUNBY={};for(const r of RUNS)RUNBY[r.d]=r;
+const isWE=d=>{const g=D(d).getDay();return g===0||g===6};
+function runBase(d){const r=RUNBY[d];if(!r||!R().runOn)return null;const o=S.run[d]||{};return {...r,min:o.min||r.min,o}}
+/* sortie dont l'heure ne dépend pas du TAGE MAGE : déplacée à la main, ou week-end */
+function runFixed(d){
+  const r=runBase(d);if(!r)return null;
+  if(r.o.s)return {s:m2(r.o.s),e:m2(r.o.s)+r.min};
+  if(!isWE(d))return null;
+  let s=m2(R().runWeekend);
+  for(const e of events(d))if(e.s<s+r.min+R().runGap&&e.e>s)s=c5(e.e+R().runGap);
+  return {s,e:s+r.min};
+}
+function runFor(d){
+  const r=runBase(d);if(!r)return null;
+  let iv=runFixed(d);
+  if(!iv){
+    const ev=events(d),sl=slots(d);
+    const last=Math.max(0,ev.length?ev[ev.length-1].e:0,...sl.map(x=>m2(x.e)));
+    const s=Math.max(m2(R().runFrom),last?c5(last+R().runGap):0);iv={s,e:s+r.min};
+  }
+  return {...r,s:iv.s,e:iv.e,st:r.o.st,manual:!!r.o.s,late:!r.o.s&&!isWE(d)&&iv.s>m2(R().runTo)};
+}
+function inRange(d){return d>=R().start&&d<=LAST_SLOT_DAY}
+function targetFor(d){
+  if(!inRange(d))return 0;
+  if(SPECIAL[d])return 0;
+  const r={...R(),...(EXCEPTIONS[d]||{})},ex=EXAMS();
+  let t=r.daily;
+  if(D(d).getDay()===+r.lightDay)t=Math.min(t,r.lightMin);
+  if(ex.has(d)||(r.examVeille&&ex.has(addD(d,1))))t=Math.min(t,r.examMin);
+  return t;
+}
+function isExamPeriod(d){const ex=EXAMS();return ex.has(d)||(R().examVeille&&ex.has(addD(d,1)))}
+
+/* =====================================================================
+   4. MOTEUR DE PLACEMENT
+   ===================================================================== */
+function busyList(d,fixed){
+  const r=R(),ev=events(d),busy=[];
+  for(const e of ev)busy.push([e.s-r.margin,e.e+r.margin]);
+  if(r.lunch)busy.push([m2(r.lunchStart),m2(r.lunchEnd)]);
+  for(const f of fixed)if(f.st!=='skip'||!f.moved)busy.push([m2(f.s),m2(f.e)]);
+  const rf=runFixed(d);if(rf)busy.push([rf.s-r.margin,rf.e+r.margin]);
+  return busy.sort((a,b)=>a[0]-b[0]);
+}
+function gapsOf(busy,from,to){
+  const g=[];let cur=from;
+  for(const [a,b] of busy){if(a>cur)g.push([cur,Math.min(a,to)]);cur=Math.max(cur,b);if(cur>=to)break}
+  if(cur<to)g.push([cur,to]);
+  return g.filter(([a,b])=>b-a>0);
+}
+const f5=x=>Math.floor(x/5)*5, c5=x=>Math.ceil(x/5)*5;
+function autoPlan(d){
+  const st=peekDay(d),r={...R(),...(EXCEPTIONS[d]||{})},fixed=st.fixed;
+  const fixedMin=fixed.filter(f=>!f.moved).reduce((a,f)=>a+m2(f.e)-m2(f.s),0);
+  let rem=targetFor(d)-fixedMin-(st.cut||0);
+  if(rem<r.minBlock)return [];
+  const ev=events(d),from=m2(r.wake)+30,to=m2(r.limit);
+  const gaps=gapsOf(busyList(d,fixed),from,to).map(([a,b])=>[c5(a),f5(b)]).filter(([a,b])=>b-a>=r.minBlock);
+  const out=[],take=(a,b)=>{out.push({s:hm(a),e:hm(b)});rem-=b-a};
+  const used=[];
+  if(!ev.length){
+    /* Jours sans cours : on part de l'heure préférée (14h le week-end, 9h en semaine),
+       puis l'autre moment de la journée si l'objectif est plus long. */
+    const wd=D(d).getDay(),we=wd===0||wd===6,mb=r.minBlock;
+    const anchors=(we?[r.weekend,r.focus]:[r.focus,r.weekend]).map(m2);
+    const fit=(len)=>{let L=Math.min(len,rem);if(rem-L>0&&rem-L<mb)L=rem-mb;return L>=mb?L:0};
+    const free=gaps.map(g=>g.slice());
+    const grab=(a0)=>{for(const g of free){if(rem<mb)return;if(g[1]<=a0)continue;const s=Math.max(g[0],a0);const L=fit(g[1]-s);if(L){take(s,s+L);if(s===g[0])g[0]=s+L;else g[1]=s}return}};
+    for(const a of anchors)grab(a);
+    for(const g of free){if(rem<mb)break;const L=fit(g[1]-g[0]);if(L)take(g[0],g[0]+L)}
+  }else{
+    /* Jours de cours : tout se fait sur le campus.
+       1) les trous entre deux cours (un seul trou s'il peut tout contenir, sinon les plus grands d'abord),
+       2) collé juste après le dernier cours (jusqu'à l'heure limite sur le campus),
+       3) sinon collé juste avant le premier cours. */
+    const s0=ev[0].s,e0=ev[ev.length-1].e,ce=m2(r.campusEnd),mb=r.minBlock;
+    const fit=(len)=>{let L=Math.min(len,rem);if(rem-L>0&&rem-L<mb)L=rem-mb;return L>=mb?L:0};
+    const inner=gaps.filter(([a,b])=>a>=s0&&b<=e0);
+    const whole=inner.find(([a,b])=>b-a>=rem);
+    if(whole)take(whole[0],whole[0]+rem);
+    else for(const [a,b] of inner.slice().sort((x,y)=>(y[1]-y[0])-(x[1]-x[0]))){if(rem<mb)break;const L=fit(b-a);if(L)take(a,a+L)}
+    for(const [a,b] of gaps.filter(([a])=>a>=e0)){if(rem<mb)break;const L=fit(Math.min(b,ce)-a);if(L)take(a,a+L)}
+    for(const [a,b] of gaps.filter(([a,b])=>b<=s0).reverse()){if(rem<mb)break;const L=fit(b-Math.max(a,m2(r.earliest)));if(L)take(b-L,b)}
+  }
+  return out.sort((x,y)=>x.s<y.s?-1:1);
+}
+function slots(d){
+  const st=peekDay(d);
+  const fx=st.fixed.map((f,i)=>({...f,fi:i}));
+  const au=autoPlan(d).map(a=>({...a,auto:true}));
+  return fx.concat(au).sort((x,y)=>x.s<y.s?-1:1);
+}
+function conflicts(d,s,e){return events(d).some(x=>x.s<e&&x.e>s)}
+function setRun(d,patch){const o={...(S.run[d]||{}),...patch};for(const k in o)if(o[k]===undefined||o[k]==='')delete o[k];if(Object.keys(o).length)S.run[d]=o;else delete S.run[d];save();renderAll()}
+
+/* ---------- comptage ---------- */
+function dayCount(d){
+  let plan=0,done=0;
+  for(const x of slots(d)){if(x.moved)continue;const L=m2(x.e)-m2(x.s);plan+=L;if(x.st==='done')done+=L;else if(x.st==='part')done+=L/2}
+  return {plan,done,target:targetFor(d)};
+}
+function weekCount(mon){let plan=0,done=0;for(let i=0;i<7;i++){const c=dayCount(addD(mon,i));plan+=c.plan;done+=c.done}return {plan,done}}
+function streak(){
+  let d=todayIso(),n=0;
+  const ok=x=>{const c=dayCount(x);return c.plan===0?null:c.done>=c.plan*.8};
+  if(ok(d)!==true)d=addD(d,-1);
+  for(let i=0;i<120;i++){const v=ok(d);if(v===false)break;if(v===true)n++;if(d<=R().start)break;d=addD(d,-1)}
+  return n;
+}
+
+/* =====================================================================
+   5. ACTIONS SUR LES CRÉNEAUX
+   ===================================================================== */
+function materialize(d,slot){
+  const st=dayState(d);
+  if(slot.auto){const f={s:slot.s,e:slot.e};st.fixed.push(f);return f}
+  return st.fixed[slot.fi];
+}
+function setStatus(d,slot,status){const f=materialize(d,slot);f.st=f.st===status?undefined:status;if(!f.st&&!f.manual){const st=dayState(d);st.fixed.splice(st.fixed.indexOf(f),1)}save();renderAll()}
+function setTimes(d,slot,s,e){const f=materialize(d,slot);f.s=hm(s);f.e=hm(e);f.manual=true;save();renderAll()}
+function deleteSlot(d,slot){
+  const st=dayState(d);
+  if(slot.auto)st.cut=(st.cut||0)+m2(slot.e)-m2(slot.s);
+  else st.fixed.splice(slot.fi,1);
+  save();renderAll();
+}
+function findNextGap(fromDay,fromMin,len){
+  const r=R();
+  for(let i=0;i<30;i++){
+    const d=addD(fromDay,i);if(d>LAST_SLOT_DAY)break;
+    const st=peekDay(d);
+    const busy=busyList(d,st.fixed).concat(slots(d).filter(x=>x.auto).map(x=>[m2(x.s),m2(x.e)])).sort((a,b)=>a[0]-b[0]);
+    const start=Math.max(m2(r.wake)+30,i===0?fromMin:0);
+    for(const [a,b] of gapsOf(busy,start,m2(r.limit))){const A=c5(a);if(f5(b)-A>=len)return {d,s:A,e:A+len}}
+  }
+  return null;
+}
+function reportSlot(d,slot){
+  const len=m2(slot.e)-m2(slot.s);
+  const now=new Date();const fromDay=d<todayIso()?todayIso():d;
+  const fromMin=fromDay===todayIso()?Math.max(m2(slot.e),now.getHours()*60+now.getMinutes()):m2(slot.e);
+  const g=findNextGap(fromDay,fromMin,len);
+  if(!g){$('#sdErr').textContent='Aucun trou libre assez long dans les 30 prochains jours.';return}
+  const f=materialize(d,slot);f.st='skip';f.moved=`${g.d} ${hm(g.s)}`;
+  dayState(g.d).fixed.push({s:hm(g.s),e:hm(g.e),manual:true,from:d});
+  save();closeAll();cur=g.d;renderAll();
+}
+
+/* =====================================================================
+   6. VUE AUJOURD'HUI
+   ===================================================================== */
+let cur=todayIso();
+if(cur<R().start)cur=R().start;
+const PX=1.05, T0=7*60, T1=23*60+30;
+function badgesFor(d){
+  const b=[];
+  if(SPECIAL[d])b.push(`<span class="bdg tm">★ ${SPECIAL[d].label}</span>`);
+  if(FERIES[d])b.push(`<span class="bdg">Férié · ${FERIES[d]}</span>`);
+  for(const [a,z,l] of VACANCES)if(d>=a&&d<=z)b.push(`<span class="bdg">${l}</span>`);
+  if(EXAMS().has(d))b.push(`<span class="bdg ex">Partiel</span>`);
+  else if(isExamPeriod(d))b.push(`<span class="bdg ex">Veille de partiel</span>`);
+  if(D(d).getDay()===+R().lightDay&&inRange(d))b.push(`<span class="bdg">Jour allégé</span>`);
+  if(d===EXAM_DAY)b.push(`<span class="bdg warn">Conflit : Lean 10h-11h30 le même jour</span>`);
+  const rn=runFor(d);if(rn)b.push(`<span class="bdg run">Course · ${rn.t}</span>`);
+  if(rn&&rn.late)b.push(`<span class="bdg warn">Sortie après ${hh(m2(R().runTo))} : cours jusqu’à ${hm(events(d).slice(-1)[0]?.e||0)}</span>`);
+  return b.join('');
+}
+function renderToday(){
+  const d=cur,ev=events(d),sl=slots(d),c=dayCount(d);
+  $('#dTitle').textContent=fmtDay(d);
+  $('#dToday').hidden=d===todayIso();
+  $('#dBadges').innerHTML=badgesFor(d);
+  $('#dPlan').innerHTML=c.target||c.plan?`<b>${dur(c.plan)}</b> prévues${c.target&&c.plan!==c.target?` · objectif ${dur(c.target)}`:''}`:(inRange(d)?'Pas de créneau ce jour':'Hors période de préparation');
+  const tl=$('#tl');tl.style.height=(T1-T0)*PX+'px';
+  let h='';
+  for(let x=T0;x<=T1;x+=30){const y=(x-T0)*PX;h+=`<div class="hr ${x%60?'h30':''}" style="top:${y}px"></div>`;if(x%60===0&&x>T0)h+=`<span class="hl" style="top:${y}px">${pad(x/60)}h</span>`}
+  h+='<div class="lane" id="lane">';
+  for(const e of ev){
+    const cls=e.y==='examen'?'x':e.y==='événement'?'o':e.y==='perso'?'u':'c';
+    const H=(e.e-e.s)*PX;
+    h+=`<div class="ev ${cls} ${H<44?'short':''}" style="top:${(e.s-T0)*PX}px;height:${H-2}px" title="${e.t}"><span class="t">${shortTitle(e.t)}${e.y!=='cours'&&e.y!=='événement'&&e.y!=='perso'?` · ${e.y}`:''}${e.v?' ⚠':''}</span><span class="m">${hm(e.s)}–${hm(e.e)}</span>${e.r?`<span class="r">${e.r.split(' ; ')[0]}</span>`:''}</div>`;
+  }
+  sl.forEach((x,i)=>{
+    const s=m2(x.s),e=m2(x.e),H=(e-s)*PX;
+    const cls=(x.st==='done'?'done':x.st==='part'?'part':x.st==='skip'?'skip':'')+(conflicts(d,s,e)?' conflict':'');
+    const ic=x.st==='done'?'✓':x.st==='part'?'½':x.st==='skip'?'×':'';
+    h+=`<button class="slot ${cls}" data-i="${i}" style="top:${(s-T0)*PX}px;height:${H-2}px"><b>TAGE MAGE${x.from?' · reporté':''}</b><span class="m">${hm(s)}–${hm(e)} · ${dur(e-s)}</span>${x.moved?`<span class="m" style="display:block">→ reporté au ${fmtShort(x.moved.split(' ')[0])}</span>`:''}${ic?`<span class="st">${ic}</span>`:''}<span class="grip" data-g="move" aria-hidden="true">⠿</span><span class="rz" data-g="size" aria-hidden="true"></span></button>`;
+  });
+  const rn=runFor(d);
+  if(rn){const H=(rn.e-rn.s)*PX,ic=rn.st==='done'?'✓':rn.st==='part'?'½':rn.st==='skip'?'×':'';
+    h+=`<button class="slot run ${rn.st||''} ${rn.late?'late':''}" data-run="1" style="top:${(rn.s-T0)*PX}px;height:${H-2}px"><b>Course · ${rn.t}</b><span class="m">${hm(rn.s)}–${hm(rn.e)} · ${dur(rn.min)}</span>${ic?`<span class="st">${ic}</span>`:''}<span class="grip" data-g="move" aria-hidden="true">⠿</span></button>`}
+  h+='</div>';
+  if(d===todayIso()){const n=new Date(),x=n.getHours()*60+n.getMinutes();if(x>=T0&&x<=T1)h+=`<div class="now" style="top:${(x-T0)*PX}px"></div>`}
+  tl.innerHTML=h;
+  bindSlots(d,sl);
+  bindRun(d,rn);
+}
+function bindSlots(d,sl){
+  $$('#lane .slot:not(.run)').forEach(el=>{
+    const x=sl[+el.dataset.i];
+    let drag=null;
+    el.addEventListener('pointerdown',ev=>{
+      const g=ev.target.dataset.g;if(!g)return;
+      ev.preventDefault();el.setPointerCapture(ev.pointerId);
+      drag={g,y:ev.clientY,s:m2(x.s),e:m2(x.e),ns:m2(x.s),ne:m2(x.e),moved:false};el.classList.add('drag');
+    });
+    el.addEventListener('pointermove',ev=>{
+      if(!drag)return;const dm=Math.round((ev.clientY-drag.y)/PX/5)*5;if(Math.abs(ev.clientY-drag.y)>4)drag.moved=true;
+      if(drag.g==='move'){drag.ns=Math.max(T0,Math.min(T1-(drag.e-drag.s),drag.s+dm));drag.ne=drag.ns+(drag.e-drag.s)}
+      else{drag.ne=Math.max(drag.s+20,Math.min(T1,drag.e+dm))}
+      el.style.top=(drag.ns-T0)*PX+'px';el.style.height=(drag.ne-drag.ns)*PX-2+'px';
+      el.querySelector('.m').textContent=`${hm(drag.ns)}–${hm(drag.ne)} · ${dur(drag.ne-drag.ns)}`;
+      el.classList.toggle('conflict',conflicts(d,drag.ns,drag.ne));
+    });
+    const end=()=>{if(!drag)return;const k=drag;drag=null;el.classList.remove('drag');if(k.moved&&(k.ns!==k.s||k.ne!==k.e))setTimes(d,x,k.ns,k.ne);else renderToday()};
+    el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+    el.addEventListener('click',ev=>{if(ev.target.dataset.g)return;openSlot(d,x)});
+  });
+}
+
+function bindRun(d,rn){
+  const el=$('#lane .slot.run');if(!el||!rn)return;let drag=null;
+  el.addEventListener('pointerdown',ev=>{if(ev.target.dataset.g!=='move')return;ev.preventDefault();el.setPointerCapture(ev.pointerId);drag={y:ev.clientY,s:rn.s,ns:rn.s,moved:false};el.classList.add('drag')});
+  el.addEventListener('pointermove',ev=>{if(!drag)return;const dm=Math.round((ev.clientY-drag.y)/PX/5)*5;if(Math.abs(ev.clientY-drag.y)>4)drag.moved=true;drag.ns=Math.max(T0,Math.min(T1-rn.min,drag.s+dm));el.style.top=(drag.ns-T0)*PX+'px';el.querySelector('.m').textContent=`${hm(drag.ns)}–${hm(drag.ns+rn.min)} · ${dur(rn.min)}`});
+  const end=()=>{if(!drag)return;const k=drag;drag=null;el.classList.remove('drag');if(k.moved&&k.ns!==k.s)setRun(d,{s:hm(k.ns)});else renderToday()};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+  el.addEventListener('click',ev=>{if(ev.target.dataset.g)return;openRun(d)});
+}
+let RD=null;
+function openRun(d){
+  const rn=runFor(d);if(!rn)return;RD=d;
+  $('#rdTitle').textContent=rn.t;
+  $('#rdSub').textContent=`${fmtDay(d)} · ${dur(rn.min)}${rn.manual?' · heure choisie':' · heure automatique'}`;
+  $('#rdDet').textContent=rn.det+(rn.v?` (${rn.v})`:'');
+  $$('#rdSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===rn.st));
+  $('#rdStart').value=hm(rn.s);$('#rdDur').value=rn.min;$('#rdErr').textContent='';
+  $('#runDrawer').hidden=false;
+}
+$$('#rdSeg button').forEach(b=>b.onclick=()=>{const cur0=(S.run[RD]||{}).st;setRun(RD,{st:cur0===b.dataset.s?undefined:b.dataset.s});openRun(RD)});
+$('#rdSave').onclick=()=>{const s=$('#rdStart').value,m=+$('#rdDur').value;if(!s||!m||m<10){$('#rdErr').textContent='Indique une heure de départ et une durée d’au moins 10 min.';return}
+  setRun(RD,{s,min:m===RUNBY[RD].min?undefined:m});closeAll()};
+$('#rdAuto').onclick=()=>{setRun(RD,{s:undefined});openRun(RD)};
+$('#rdClose').onclick=closeAll;
+
+/* ---------- tiroir créneau ---------- */
+let SD=null;
+function openSlot(d,x){
+  SD={d,x};
+  $('#sdTitle').textContent=x.from?'Créneau reporté':'Créneau TAGE MAGE';
+  $('#sdSub').textContent=`${fmtDay(d)} · ${dur(m2(x.e)-m2(x.s))}${x.moved?` · reporté au ${fmtShort(x.moved.split(' ')[0])} à ${x.moved.split(' ')[1]}`:''}`;
+  $$('#sdSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===x.st));
+  $('#sdStart').value=x.s;$('#sdEnd').value=x.e;$('#sdErr').textContent='';
+  $('#sdReport').hidden=!(x.st==='skip'&&!x.moved);
+  $('#slotDrawer').hidden=false;
+}
+$$('#sdSeg button').forEach(b=>b.onclick=()=>{const {d,x}=SD;setStatus(d,x,b.dataset.s);const nx=slots(d).find(y=>y.s===x.s&&y.e===x.e);if(nx)openSlot(d,nx);else closeAll()});
+$('#sdSave').onclick=()=>{
+  const s=$('#sdStart').value,e=$('#sdEnd').value;
+  if(!s||!e){$('#sdErr').textContent='Indique une heure de début et de fin.';return}
+  if(m2(e)-m2(s)<15){$('#sdErr').textContent='La fin doit être au moins 15 min après le début.';return}
+  setTimes(SD.d,SD.x,m2(s),m2(e));closeAll();
+};
+$('#sdStart').oninput=$('#sdEnd').oninput=()=>{$('#sdErr').textContent=''};
+$('#sdReport').onclick=()=>reportSlot(SD.d,SD.x);
+$('#sdDel').onclick=()=>{deleteSlot(SD.d,SD.x);closeAll()};
+$('#sdClose').onclick=closeAll;
+
+/* ---------- tiroir événement ---------- */
+function renderEvList(){
+  const st=peekDay(cur);
+  $('#evList').innerHTML=st.ev.length?st.ev.map((x,i)=>`<div class="mi" style="grid-template-columns:1fr auto;align-items:center"><span><b>${x.t}</b><br><span class="mono" style="font-size:12.5px;color:var(--soft)">${x.s}–${x.e}</span></span><button class="link" data-del="${i}">Retirer</button></div>`).join(''):'';
+  $$('#evList [data-del]').forEach(b=>b.onclick=()=>{dayState(cur).ev.splice(+b.dataset.del,1);save();renderAll();renderEvList()});
+}
+$('#addEv').onclick=()=>{$('#evErr').textContent='';$('#evName').value='';renderEvList();$('#evDrawer').hidden=false};
+$('#evSave').onclick=()=>{
+  const t=$('#evName').value.trim()||'Événement',s=$('#evStart').value,e=$('#evEnd').value;
+  if(!s||!e||m2(e)<=m2(s)){$('#evErr').textContent='La fin doit être après le début.';return}
+  const st=dayState(cur);st.ev.push({t,s,e});
+  st.fixed=st.fixed.filter(f=>f.st||!(m2(f.s)<m2(e)&&m2(f.e)>m2(s)));
+  save();renderAll();renderEvList();$('#evName').value='';
+};
+$('#evClose').onclick=closeAll;
+$('#addSlot').onclick=()=>{
+  const g=findNextGap(cur,cur===todayIso()?new Date().getHours()*60+new Date().getMinutes():0,30);
+  if(!g||g.d!==cur){$('#dPlan').textContent='Plus de trou libre de 30 min ce jour-là.';return}
+  dayState(cur).fixed.push({s:hm(g.s),e:hm(g.e),manual:true});save();renderAll();
+};
+$('#dRebuild').onclick=()=>{const st=dayState(cur);st.fixed=st.fixed.filter(f=>f.st);st.cut=0;save();renderAll()};
+$('#dPrev').onclick=()=>{cur=addD(cur,-1);renderAll()};
+$('#dNext').onclick=()=>{cur=addD(cur,1);renderAll()};
+$('#dToday').onclick=()=>{cur=todayIso();renderAll()};
+
+/* =====================================================================
+   7. VUE SEMAINE
+   ===================================================================== */
+let wcur=monday(cur);
+function renderWeek(){
+  const mon=wcur,sun=addD(mon,6),W0=7*60+30,W1=22*60+30,K=380/(W1-W0);
+  $('#wTitle').textContent=`${D(mon).getDate()} ${D(mon).toLocaleDateString('fr-FR',{month:'short'})} – ${D(sun).getDate()} ${D(sun).toLocaleDateString('fr-FR',{month:'short'})}`;
+  $('#wToday').hidden=mon===monday(todayIso());
+  const wc=weekCount(mon),rate=wc.plan?Math.round(wc.done/wc.plan*100):0;
+  $('#wPlan').textContent=dur(wc.plan);$('#wDone').textContent=dur(wc.done);$('#wRate').textContent=rate+' %';
+  $('#wDoneBar').style.width=Math.min(100,rate)+'%';
+  const notes=[];for(let i=0;i<7;i++){const d=addD(mon,i);if(EXAMS().has(d))notes.push('partiel');if(SPECIAL[d])notes.push(SPECIAL[d].short.toLowerCase());if(FERIES[d])notes.push('férié')}
+  $('#wSub').textContent=notes.length?`Semaine avec ${[...new Set(notes)].join(', ')}`:'Semaine de cours normale';
+  let h='<div></div>';
+  for(let i=0;i<7;i++){const d=addD(mon,i);h+=`<button class="dh ${d===todayIso()?'today':''}" data-d="${d}">${['lun','mar','mer','jeu','ven','sam','dim'][i]}<b>${D(d).getDate()}</b><span class="dot ${EXAMS().has(d)?'x':SPECIAL[d]?'s':RUNBY[d]&&R().runOn?'r':''}"></span></button>`}
+  let ax='';for(let H=8;H<=22;H+=2)ax+=`<span style="top:${(H*60-W0)*K}px">${H}</span>`;
+  h+=`<div class="ax" style="height:380px">${ax}</div>`;
+  for(let i=0;i<7;i++){
+    const d=addD(mon,i);let c='';
+    for(const e of events(d)){const a=Math.max(e.s,W0),b=Math.min(e.e,W1);if(b<=a)continue;c+=`<div class="b ${e.y==='examen'?'x':e.y==='événement'||e.y==='perso'?'o':'c'}" style="top:${(a-W0)*K}px;height:${(b-a)*K-1}px"></div>`}
+    for(const x of slots(d)){const a=m2(x.s),b=m2(x.e);c+=`<div class="b s ${x.st||''}" style="top:${(a-W0)*K}px;height:${(b-a)*K-1}px"></div>`}
+    const rn=runFor(d);if(rn){const a=Math.max(rn.s,W0),b=Math.min(rn.e,W1);if(b>a)c+=`<div class="b r ${rn.st||''}" style="top:${(a-W0)*K}px;height:${(b-a)*K-1}px"></div>`}
+    h+=`<button class="col colbtn" data-d="${d}" style="height:380px" aria-label="${fmtDay(d)}">${c}</button>`;
+  }
+  $('#wk').innerHTML=h;
+  $('#wsum').innerHTML=Array.from({length:7},(_,i)=>{const c=dayCount(addD(mon,i));return `<span>${c.plan?(Math.round(c.plan/6)/10).toString().replace('.',',')+'h':'–'}</span>`}).join('');
+  const rs=Array.from({length:7},(_,i)=>runFor(addD(mon,i))).filter(Boolean);
+  $('#wRun span').innerHTML=rs.length?`Course : <b>${rs.filter(r=>r.st==='done').length}/${rs.length}</b> séances faites · ${rs.map(r=>`${['dim','lun','mar','mer','jeu','ven','sam'][D(r.d).getDay()]} ${hm(r.s)}`).join(', ')}`:'Pas de sortie course cette semaine';
+  $$('#wk [data-d]').forEach(b=>b.onclick=()=>{cur=b.dataset.d;show('today')});
+}
+$('#wPrev').onclick=()=>{wcur=addD(wcur,-7);renderWeek()};
+$('#wNext').onclick=()=>{wcur=addD(wcur,7);renderWeek()};
+$('#wToday').onclick=()=>{wcur=monday(todayIso());renderWeek()};
+
+/* =====================================================================
+   8. VUE MOIS
+   ===================================================================== */
+let mcur=cur.slice(0,7);
+function renderMonth(){
+  const [y,m]=mcur.split('-').map(Number),first=new Date(y,m-1,1,12);
+  $('#mTitle').textContent=first.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  $('#mToday').hidden=mcur===todayIso().slice(0,7);
+  let plan=0,done=0;
+  let h=['L','M','M','J','V','S','D'].map(x=>`<div class="wd">${x}</div>`).join('');
+  const lead=(first.getDay()+6)%7;for(let i=0;i<lead;i++)h+='<div class="md out"></div>';
+  const nd=new Date(y,m,0).getDate(),keys=[];
+  for(let k=1;k<=nd;k++){
+    const d=`${y}-${pad(m)}-${pad(k)}`,c=dayCount(d);plan+=c.plan;done+=c.done;
+    const tags=(EXAMS().has(d)?'<i class="x"></i>':'')+(SPECIAL[d]?'<i class="s"></i>':'')+(FERIES[d]?'<i class="f"></i>':'')+(RUNBY[d]&&R().runOn?'<i class="r"></i>':'');
+    h+=`<button class="md ${d<todayIso()?'past':''} ${d===todayIso()?'today':''} ${d===EXAM_DAY?'jj':''}" data-d="${d}"><b>${k}</b><span class="tags">${tags}</span>${c.plan?`<span class="ring"><i style="width:${Math.round(c.done/c.plan*100)}%"></i></span>`:'<span class="mm">&nbsp;</span>'}</button>`;
+    if(SPECIAL[d])keys.push({d,t:SPECIAL[d].label,k:''});
+    if(FERIES[d])keys.push({d,t:`Férié · ${FERIES[d]}`,k:''});
+    if(RUNBY[d]&&/Test VMA/.test(RUNBY[d].t))keys.push({d,t:`Course · ${RUNBY[d].t}`,k:''});
+    for(const e of BYDAY[d]||[])if(e.y==='examen')keys.push({d,t:`Partiel · ${shortTitle(e.t)} (${e.s}–${e.e})`,k:'ex'});
+  }
+  $('#mgrid').innerHTML=h;
+  $('#mSub').textContent=plan?`${dur(done)} faites sur ${dur(plan)} prévues`:'Hors période de préparation';
+  $('#mlist').innerHTML=keys.length?keys.map(x=>`<button class="mi ${x.k}" data-d="${x.d}"><span class="d">${fmtShort(x.d)}</span><span>${x.t}</span></button>`).join(''):'<p class="hint" style="text-align:left">Pas de date particulière ce mois-ci.</p>';
+  $$('#mgrid [data-d],#mlist [data-d]').forEach(b=>b.onclick=()=>{cur=b.dataset.d;show('today')});
+}
+const shiftM=n=>{const [y,m]=mcur.split('-').map(Number);const d=new Date(y,m-1+n,1);mcur=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;renderMonth()};
+$('#mPrev').onclick=()=>shiftM(-1);$('#mNext').onclick=()=>shiftM(1);$('#mToday').onclick=()=>{mcur=todayIso().slice(0,7);renderMonth()};
+
+/* =====================================================================
+   9. RÉGLAGES
+   ===================================================================== */
+const FIELDS={
+  setVol:[
+    ['daily','number','Temps par jour','minutes, découpables en blocs',{min:30,max:300,step:10}],
+    ['lightDay','select','Jour allégé','ou de repos',{opts:[[1,'Lundi'],[2,'Mardi'],[3,'Mercredi'],[4,'Jeudi'],[5,'Vendredi'],[6,'Samedi'],[0,'Dimanche'],[-1,'Aucun']]}],
+    ['lightMin','number','Temps le jour allégé','0 = repos complet',{min:0,max:240,step:10}],
+    ['examMin','number','Temps pendant les partiels','détectés dans l’emploi du temps',{min:0,max:240,step:10}],
+    ['examVeille','toggle','Réduire aussi la veille','d’un partiel'],
+    ['start','date','Début des créneaux','fin le 3 février 2027']
+  ],
+  setDay:[
+    ['lunch','toggle','Garder la pause déjeuner libre','aucun créneau pendant ce temps'],
+    ['lunchStart','time','Pause déjeuner de','début'],
+    ['lunchEnd','time','Pause déjeuner jusqu’à','fin'],
+    ['campusEnd','time','Heure limite sur le campus','les jours de cours, rien après'],
+    ['earliest','time','Arrivée au plus tôt','avant le premier cours'],
+    ['weekend','time','Week-end : début du créneau','samedi et dimanche'],
+    ['wake','time','Réveil','premier bloc 30 min après'],
+    ['focus','time','Vacances : début du créneau','jours de semaine sans cours'],
+    ['limit','time','Heure limite le soir','jours sans cours']
+  ],
+  setPlace:[
+    ['margin','number','Marge après ou avant un cours','minutes',{min:0,max:60,step:5}],
+    ['minBlock','number','Bloc minimum','minutes',{min:15,max:60,step:5}]
+  ],
+  setRun:[
+    ['runOn','toggle','Afficher le plan course','52 séances, 3 par semaine'],
+    ['runFrom','time','Sortie en semaine dès','après ta journée sur le campus'],
+    ['runTo','time','Départ au plus tard','au-delà, la journée est signalée'],
+    ['runGap','number','Battement avant la sortie','trajet + se changer, en minutes',{min:0,max:90,step:5}],
+    ['runWeekend','time','Sortie le week-end à','avant le TAGE MAGE de l’après-midi']
+  ]
+};
+function renderSettings(){
+  for(const [box,list] of Object.entries(FIELDS)){
+    $('#'+box).innerHTML=list.map(([k,t,l,sub,o])=>{
+      const v=R()[k],id='r_'+k;
+      let ctl;
+      if(t==='toggle')ctl=`<button class="tg" id="${id}" aria-pressed="${!!v}" aria-label="${l}"></button>`;
+      else if(t==='select')ctl=`<select id="${id}">${o.opts.map(([a,b])=>`<option value="${a}" ${+v===a?'selected':''}>${b}</option>`).join('')}</select>`;
+      else ctl=`<input id="${id}" type="${t}" value="${v}" ${o?`min="${o.min}" max="${o.max}" step="${o.step}"`:''}>`;
+      return `<div class="fr"><label for="${id}">${l}<small>${sub}</small></label>${ctl}</div>`;
+    }).join('');
+  }
+  $$('#settings .tg').forEach(b=>b.onclick=()=>{const k=b.id.slice(2);S.R[k]=!S.R[k];b.setAttribute('aria-pressed',S.R[k]);changed()});
+  $$('#settings input,#settings select').forEach(i=>i.onchange=()=>{
+    const k=i.id.slice(2);let v=i.value;
+    if(i.type==='number'||i.tagName==='SELECT'){v=+v;if(isNaN(v))return;if(i.min!==''&&v<+i.min)v=+i.min;if(i.max!==''&&v>+i.max)v=+i.max;i.value=v}
+    if(!v&&v!==0)return;S.R[k]=v;changed();
+  });
+}
+let svT;function changed(){save();renderAll();$('#savedMsg').textContent='Enregistré · planning recalculé';clearTimeout(svT);svT=setTimeout(()=>$('#savedMsg').textContent='',1800)}
+
+/* ---------- import / export ---------- */
+function download(name,text,type){
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){}
+}
+function openIO(title,sub,text,btns){
+  $('#ioTitle').textContent=title;$('#ioSub').textContent=sub;$('#ioText').value=text;$('#ioErr').textContent='';$('#ioErr').className='err';
+  $('#ioBtns').innerHTML=btns.map((b,i)=>`<button class="btn ${b.cls||'ghost'}" data-b="${i}">${b.label}</button>`).join('');
+  $$('#ioBtns [data-b]').forEach(el=>el.onclick=()=>btns[+el.dataset.b].fn());
+  $('#ioDrawer').hidden=false;
+}
+const copy=()=>{const t=$('#ioText');navigator.clipboard?.writeText(t.value).then(()=>{$('#ioErr').className='ok';$('#ioErr').textContent='Copié'}).catch(()=>{t.select()})};
+function ics(){
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Agenda TAGE MAGE//FR','CALSCALE:GREGORIAN','X-WR-CALNAME:TAGE MAGE','X-WR-TIMEZONE:Europe/Paris'];
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  for(let d=R().start;d<=LAST_SLOT_DAY;d=addD(d,1))for(const x of slots(d)){if(x.moved)continue;const dd=d.replace(/-/g,'');
+    L.push('BEGIN:VEVENT',`UID:tm-${dd}-${x.s.replace(':','')}@agenda-tm`,`DTSTAMP:${stamp}`,`DTSTART;TZID=Europe/Paris:${dd}T${x.s.replace(':','')}00`,`DTEND;TZID=Europe/Paris:${dd}T${x.e.replace(':','')}00`,'SUMMARY:TAGE MAGE',`DESCRIPTION:Créneau de ${dur(m2(x.e)-m2(x.s))}`,'END:VEVENT')}
+  for(const r0 of RUNS){const rn=runFor(r0.d);if(!rn)continue;const dd=r0.d.replace(/-/g,''),a=hm(rn.s).replace(':',''),b=hm(rn.e).replace(':','');
+    L.push('BEGIN:VEVENT',`UID:run-${dd}@agenda-tm`,`DTSTAMP:${stamp}`,`DTSTART;TZID=Europe/Paris:${dd}T${a}00`,`DTEND;TZID=Europe/Paris:${dd}T${b}00`,`SUMMARY:Course · ${rn.t.replace(/,/g,'\\,')}`,`DESCRIPTION:${rn.det.replace(/,/g,'\\,')}`,'END:VEVENT')}
+  L.push('END:VCALENDAR');return L.join('\r\n');
+}
+$('#expIcs').onclick=()=>{const t=ics();openIO('Exporter les créneaux','Ouvre le fichier .ics sur ton iPhone pour ajouter tous les créneaux à ton calendrier.',t,[{label:'Télécharger',cls:'',fn:()=>download('tage-mage.ics',t,'text/calendar')},{label:'Copier',fn:copy}])};
+$('#expJson').onclick=()=>{const t=JSON.stringify(S,null,1);openIO('Exporter ma sauvegarde','Coches, déplacements, événements et réglages.',t,[{label:'Télécharger',cls:'',fn:()=>download('agenda-tm-sauvegarde.json',t,'application/json')},{label:'Copier',fn:copy}])};
+function readFileInto(){$('#ioFile').value='';$('#ioFile').click()}
+$('#ioFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('#ioText').value=r.result};r.readAsText(f)};
+$('#impJson').onclick=()=>openIO('Importer une sauvegarde','Choisis le fichier ou colle son contenu, puis valide.','',[{label:'Choisir un fichier',fn:readFileInto},{label:'Importer',cls:'',fn:()=>{
+  try{const o=JSON.parse($('#ioText').value);if(!o||typeof o!=='object'||!o.R)throw 0;S={R:{...DEFAULTS,...o.R},day:o.day||{},cours:o.cours||null,run:o.run||{}};indexCours();save();closeAll();renderAll()}catch(e){$('#ioErr').textContent='Ce fichier n’est pas une sauvegarde de l’agenda.'}}}]);
+$('#impEdt').onclick=()=>openIO('Nouvel emploi du temps','Colle un tableau JSON au même format que l’objet COURS (d, s, e, t, y, r). Les créneaux sont recalculés, tes coches restent.','',[{label:'Choisir un fichier',fn:readFileInto},{label:'Remplacer',cls:'',fn:()=>{
+  try{const a=JSON.parse($('#ioText').value);if(!Array.isArray(a)||!a.every(x=>x.d&&x.s&&x.e))throw 0;S.cours=a;indexCours();save();closeAll();renderAll()}catch(e){$('#ioErr').textContent='Format attendu : [{"d":"2027-01-11","s":"08:15","e":"09:45","t":"…","y":"cours"}, …]'}}}]);
+$('#ioClose').onclick=closeAll;
+$('#resetBtn').onclick=()=>{$('#cfDrawer').hidden=false};
+$('#cfYes').onclick=()=>{S={R:{...DEFAULTS},day:{},cours:null,run:{}};indexCours();save();closeAll();renderSettings();renderAll()};
+$('#cfNo').onclick=closeAll;
+
+/* =====================================================================
+   10. NAVIGATION + RENDU GLOBAL
+   ===================================================================== */
+function closeAll(){$$('.ovl').forEach(o=>o.hidden=true)}
+$$('.ovl').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeAll()}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+let view='today';
+function show(id){
+  view=id;for(const s of ['today','week','month','settings'])$('#'+s).hidden=s!==id;
+  $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===id));
+  if(id==='week')wcur=monday(cur);if(id==='month')mcur=cur.slice(0,7);if(id==='settings')renderSettings();
+  try{localStorage.setItem('agenda-tm-tab',id)}catch(e){}
+  renderAll();window.scrollTo(0,0);
+  if(id==='today')scrollToNow();
+}
+$$('.tab').forEach(t=>t.onclick=()=>show(t.dataset.tab));
+function renderHeader(){
+  const j=Math.round((D(EXAM_DAY)-D(todayIso()))/864e5);
+  $('#hJ').textContent=j>0?`J-${j}`:j===0?'Jour J':'Passé';
+  const c=dayCount(cur);
+  $('#sDay').innerHTML=`${dur(c.done)}<small> / ${dur(c.plan)}</small>`;
+  $('#sDayBar').style.width=(c.plan?Math.min(100,c.done/c.plan*100):0)+'%';
+  const w=weekCount(monday(cur)),r=w.plan?Math.round(w.done/w.plan*100):0;
+  $('#sWeek').textContent=r+' %';$('#sWeekBar').style.width=Math.min(100,r)+'%';
+  const s=streak();$('#sStreak').textContent=s+' j';$('#sStreakBar').style.width=Math.min(100,s/14*100)+'%';
+  $('#hSub').textContent=`${dur(R().daily)} par jour jusqu’au 3 février · plan 10 km`;
+}
+function renderAll(){renderHeader();if(view==='today')renderToday();if(view==='week')renderWeek();if(view==='month')renderMonth()}
+function scrollToNow(){
+  if(cur!==todayIso())return;const n=new Date(),x=n.getHours()*60+n.getMinutes();
+  const tl=$('#tl');if(!tl)return;const y=tl.getBoundingClientRect().top+window.scrollY+(x-T0)*PX-220;
+  if(y>0)window.scrollTo({top:y,behavior:'instant'});
+}
+(function(){let t='today';try{t=localStorage.getItem('agenda-tm-tab')||'today'}catch(e){}show(['today','week','month','settings'].includes(t)?t:'today')})();
+setInterval(()=>{if(view==='today'&&cur===todayIso())renderToday()},60000);
+
+/* ---------- PWA : service worker versionné ---------- */
+if('serviceWorker' in navigator&&location.protocol==='https:'&&location.hostname.endsWith('github.io')){
+  let reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloaded)return;reloaded=true;location.reload()});
+  navigator.serviceWorker.register('sw.js').then(reg=>reg.update()).catch(()=>{});
+}
+</script>
+</body>
+</html>
